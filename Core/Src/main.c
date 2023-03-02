@@ -47,6 +47,8 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+TIM_HandleTypeDef htim3;
+
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
@@ -233,6 +235,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_TIM3_Init(void);
 void StartDefaultTask(void *argument);
 extern void ATParsingTaskCode(void *argument);
 extern void ATHandlingTaskCode(void *argument);
@@ -244,12 +247,27 @@ extern void ModemLedCallback(void *argument);
 extern void DutyCycleTimerCallback(void *argument);
 
 /* USER CODE BEGIN PFP */
+void CONFIGURE_TIMER_FOR_RUN_TIME_STATS()
+{
+  HAL_TIM_Base_Start(&htim3); /* Define this to initialize your timer/counter */
+}
+
+uint32_t GET_RUN_TIME_COUNTER_VALUE()
+{
+  return __HAL_TIM_GET_COUNTER(&htim3); /* Define this to sample the timer/counter */
+}
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+const volatile int uxTopUsedPriority = configMAX_PRIORITIES - 1; //this declaration enables thread awareness for FreeRTOS using OpenOCD
 
+// Paste this code to Core/Inc/FreeRTOSConfig.h to enable kernel statistics (will be overwritten by STMCubeMX everytime code is generated)
+// #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() CONFIGURE_TIMER_FOR_RUN_TIME_STATS()/* Define this to initialize your timer/counter */
+// #define portGET_RUN_TIME_COUNTER_VALUE() GET_RUN_TIME_COUNTER_VALUE()        /* Define this to sample the timer/counter */
+// #define configGENERATE_RUN_TIME_STATS (1)
+// #define configRECORD_STACK_HIGH_ADDRESS (1)
 /* USER CODE END 0 */
 
 /**
@@ -260,6 +278,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   uint32_t i;
+  (void)uxTopUsedPriority; //this declaration enables thread awareness for FreeRTOS using OpenOCD
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -283,6 +302,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -487,6 +507,51 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 7200-1;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 65535;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
 
 }
 
