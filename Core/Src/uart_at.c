@@ -1,6 +1,7 @@
 #include "cmsis_os.h"
 #include "uart_at.h"
 #include "uartRingBufDMA.h"
+#include <stdio.h>
 
 #define SEND_RAW_AT_WAIT_FLAG (0x80)
 
@@ -40,6 +41,7 @@ const AT_RESPONSE_DEF_t AT_RESPONSES[NUM_AT_RESPONSES] =
         {.response = AT_BUSY, .response_string = "AT_BUSY"},
         {.response = AT_JOIN_ERROR, .response_string = "AT_JOIN_ERROR"},
         {.response = AT_RESET, .response_string = "Radioenge"},
+        {.response = AT_NO_NETWORK_JOINED, .response_string = "AT_NO_NETWORK_JOINED"},
         {.response = AT_RESPONSE_UNDEFINED, .response_string = "UNDEFINED"}};
 
 extern void LoRaWAN_RxEventCallback(uint8_t *data, uint32_t length, uint32_t port, int32_t rssi, int32_t snr);
@@ -194,7 +196,8 @@ void ATHandlingTaskCode(void *argument)
             if (new_cmd->response == AT_RX_OK)
             {
                 LoRaWAN_RxEventCallback(new_cmd->rx_payload->Buf, new_cmd->rx_payload->rcvDataLen, new_cmd->rx_payload->rcvPort, new_cmd->rx_payload->rcvRSSI, new_cmd->rx_payload->rcvSNR);
-                osMemoryPoolFree(mpid_LoRaPayload_MemPool, PendingCommand->rx_payload);                
+                //osMemoryPoolFree(mpid_LoRaPayload_MemPool, PendingCommand->rx_payload);                
+                osMemoryPoolFree(mpid_LoRaPayload_MemPool, new_cmd->rx_payload);
                 osMemoryPoolFree(mpid_ATCMD_MemPool,new_cmd);                        
             }
             else if ((new_cmd->response == AT_JOINED) || (new_cmd->response == AT_JOIN_ERROR))
@@ -306,7 +309,7 @@ void ATParsingTaskCode(void const *argument)
                 pATResponse->response = ParseResponse(pMem->Buf);
                 if(pATResponse!=AT_RESPONSE_UNDEFINED)
                 {
-                    if(pATResponse==AT_RX_OK)
+                    if(pATResponse->response==AT_RX_OK)
                     {
                         //parse received data
                         char *pch;
@@ -324,14 +327,16 @@ void ATParsingTaskCode(void const *argument)
                         {
                             memcpy(asciiChar, rcvDataPointer + i, 2);
                             number = (uint32_t)strtol(asciiChar, NULL, 16);
-                            sprintf(pLoRaPayload->Buf, "%s%c", pLoRaPayload->Buf, number);
+                            //sprintf(pLoRaPayload->Buf, "%s%c", pLoRaPayload->Buf, number);
+                            pLoRaPayload->Buf[i / 2] = number & 0x00FF;
                         }
                         pch = strtok(NULL, ":");
                         pLoRaPayload->rcvPort = atoi(pch);
                         pch = strtok(NULL, ":");
                         pLoRaPayload->rcvRSSI = atoi(pch);
                         pch = strtok(NULL, ":");
-                        pLoRaPayload->rcvSNR = atoi(pch);                        
+                        pLoRaPayload->rcvSNR = atoi(pch);
+                        pATResponse->rx_payload = pLoRaPayload;
                     }    
                     else
                     {
@@ -342,7 +347,7 @@ void ATParsingTaskCode(void const *argument)
                 }
                 else
                 {
-                    osMemoryPoolFree(mpid_ATCMD_MemPool,pATResponse);                    
+                    osMemoryPoolFree(mpid_ATCMD_MemPool,pATResponse);
                 }
             } 
             else
