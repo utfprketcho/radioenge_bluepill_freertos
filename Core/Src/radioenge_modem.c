@@ -3,6 +3,7 @@
 #include "uart_at.h"
 #include "main.h"
 #include <string.h>
+#include <stdio.h>
 
 volatile JOINED_STATE gJoinedFSM = JOINED_TX;
 volatile RADIO_STATE gRadioState = RADIO_RESET;
@@ -93,7 +94,7 @@ void ModemLedCallback(void *argument)
         HAL_GPIO_TogglePin(LED1_RED_GPIO_Port, LED1_RED_Pin);
         HAL_GPIO_WritePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin, 0);
         HAL_GPIO_WritePin(LED3_GREEN_GPIO_Port, LED3_GREEN_Pin, 0);
-        HAL_GPIO_WritePin(LED4_WHITE_GPIO_Port, LED4_WHITE_Pin, 0); 
+        HAL_GPIO_WritePin(LED4_BLUE_GPIO_Port, LED4_BLUE_Pin, 0); 
         break;       
     }
     case RADIO_CONFIGURING:
@@ -101,7 +102,7 @@ void ModemLedCallback(void *argument)
         HAL_GPIO_WritePin(LED1_RED_GPIO_Port, LED1_RED_Pin,0);
         HAL_GPIO_TogglePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin);
         HAL_GPIO_WritePin(LED3_GREEN_GPIO_Port, LED3_GREEN_Pin,0);
-        HAL_GPIO_WritePin(LED4_WHITE_GPIO_Port, LED4_WHITE_Pin, 0);        
+        HAL_GPIO_WritePin(LED4_BLUE_GPIO_Port, LED4_BLUE_Pin, 0);        
         break;       
     }
     case RADIO_JOINING:
@@ -109,7 +110,7 @@ void ModemLedCallback(void *argument)
         HAL_GPIO_WritePin(LED1_RED_GPIO_Port, LED1_RED_Pin,0);
         HAL_GPIO_WritePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin,0);
         HAL_GPIO_TogglePin(LED3_GREEN_GPIO_Port, LED3_GREEN_Pin);
-        HAL_GPIO_WritePin(LED4_WHITE_GPIO_Port, LED4_WHITE_Pin, 0);        
+        HAL_GPIO_WritePin(LED4_BLUE_GPIO_Port, LED4_BLUE_Pin, 0);        
         break;       
     }
     case RADIO_READY:
@@ -117,7 +118,7 @@ void ModemLedCallback(void *argument)
         HAL_GPIO_WritePin(LED1_RED_GPIO_Port, LED1_RED_Pin,0);
         HAL_GPIO_WritePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin,0);
         HAL_GPIO_WritePin(LED3_GREEN_GPIO_Port, LED3_GREEN_Pin,1);
-        HAL_GPIO_WritePin(LED4_WHITE_GPIO_Port, LED4_WHITE_Pin, 0);        
+        HAL_GPIO_WritePin(LED4_BLUE_GPIO_Port, LED4_BLUE_Pin, 0);        
         break;       
     }
     case RADIO_DUTYCYCLED:
@@ -125,7 +126,7 @@ void ModemLedCallback(void *argument)
         HAL_GPIO_WritePin(LED1_RED_GPIO_Port, LED1_RED_Pin,0);
         HAL_GPIO_WritePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin,0);
         HAL_GPIO_WritePin(LED3_GREEN_GPIO_Port, LED3_GREEN_Pin,1);
-        HAL_GPIO_TogglePin(LED4_WHITE_GPIO_Port, LED4_WHITE_Pin);        
+        HAL_GPIO_TogglePin(LED4_BLUE_GPIO_Port, LED4_BLUE_Pin);        
         break;       
     }
     default:
@@ -133,7 +134,7 @@ void ModemLedCallback(void *argument)
         HAL_GPIO_TogglePin(LED1_RED_GPIO_Port, LED1_RED_Pin);
         HAL_GPIO_TogglePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin);
         HAL_GPIO_TogglePin(LED3_GREEN_GPIO_Port, LED3_GREEN_Pin);
-        HAL_GPIO_TogglePin(LED4_WHITE_GPIO_Port, LED4_WHITE_Pin);        
+        HAL_GPIO_TogglePin(LED4_BLUE_GPIO_Port, LED4_BLUE_Pin);        
         break;       
     }    
     }
